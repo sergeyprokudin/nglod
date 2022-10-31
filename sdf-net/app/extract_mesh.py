@@ -40,7 +40,8 @@ def extract_mesh(args):
     # Convert to occupancy
     dists = torch.cat(dists, dim=0)
     grid = dists.reshape(args.mc_resolution, args.mc_resolution, args.mc_resolution)
-    occupancy = torch.where(grid <= 0, 1, 0)
+    occupancy = torch.zeros_like(grid)
+    occupancy[grid <= 0] = 1 #torch.where(grid <= 0, 1, 0)
 
     # Meshify
     print('Fraction occupied: {:.5f}'.format((occupancy == 1).float().mean().item()))
