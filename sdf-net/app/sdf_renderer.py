@@ -201,12 +201,21 @@ if __name__ == '__main__':
 
     else:
 
+        start = torch.cuda.Event(enable_timing=True)
+        end = torch.cuda.Event(enable_timing=True)
+        start.record()
         out = renderer.shade_images(net=net,
                                     f=args.camera_origin,
                                     t=args.camera_lookat,
                                     fov=args.camera_fov,
                                     aa=not args.disable_aa,
                                     mm=model_matrix)
+
+        end.record()
+
+        torch.cuda.synchronize()
+
+        print("time to render sdf: %s" % start.elapsed_time(end))
 
         data = out.float().numpy().exrdict()
 
