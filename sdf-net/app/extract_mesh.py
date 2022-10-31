@@ -21,6 +21,9 @@ def extract_mesh(args):
         os.makedirs(ins_dir)
 
     # Get SDFs
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+    start.record()
     with torch.no_grad():
         xx = torch.linspace(-1, 1, args.mc_resolution, device=device)
         pts = torch.stack(torch.meshgrid(xx, xx, xx), dim=-1).reshape(-1,3)
@@ -28,6 +31,11 @@ def extract_mesh(args):
         dists = []
         for chunk_pts in chunks:
             dists.append(net(chunk_pts).detach())
+    end.record()
+
+    torch.cuda.synchronize()
+
+    print("time to compute sdf: %s" % start.elapsed_time(end))
 
     # Convert to occupancy
     dists = torch.cat(dists, dim=0)
